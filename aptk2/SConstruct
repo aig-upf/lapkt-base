@@ -3,6 +3,8 @@ import os
 import fnmatch
 import itertools
 
+HOME = os.path.expanduser("~")
+
 # read variables from the cache, a user's custom.py file or command line arguments
 vars = Variables(['variables.cache', 'custom.py'], ARGUMENTS)
 vars.Add(BoolVariable('debug', 'Debug build', 'no'))
@@ -48,18 +50,18 @@ if env['debug'] or env['edebug']:
 	env.Append(CCFLAGS = ['-g', '-DDEBUG' ])
 	lib_name = 'lapkt2-debug'
 else:
-	env.Append(CCFLAGS = ['-Ofast', '-DNDEBUG' ])
+	env.Append(CCFLAGS = ['-O3', '-DNDEBUG' ])
 	lib_name = 'lapkt2'
 
 # Additionally, extreme debug implies a different name plus extra compilation flags
 if env['edebug']:
-	env.Append(CCFLAGS = ['-DFS0_DEBUG'])
+	env.Append(CCFLAGS = ['-DEDEBUG'])
 	lib_name = 'lapkt2-edebug'
 
 
 # Base include directories
 include_paths = ['..']
-isystem_paths = []
+isystem_paths = [HOME + '/local/include']
 
 # ATM we only include in the library a minimum amount of source files.
 source_directories = ['./search', './heuristics/interfaces', './heuristics/novelty', './tools']
