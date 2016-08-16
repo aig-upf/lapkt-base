@@ -65,6 +65,7 @@ protected:
 			// updating it. This is an open problem with the design,
 			// and a more definitive solution needs to be found (soon).
 			replaced->g = replacee->g;
+			replaced->action = replacee->action;
 			replaced->parent = replacee->parent;
 		}
 	};
