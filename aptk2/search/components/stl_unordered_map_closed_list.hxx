@@ -22,95 +22,51 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <unordered_map>
-#include <utility>
-#include <aptk2/search/interfaces/closed_list.hxx>
+#include <memory>
+#include <unordered_set>
 
 namespace aptk {
 
-	template < typename NodeType >
-	class StlUnorderedMapClosedList : public ClosedList<
-							NodeType,
-							std::unordered_multimap<
-								std::size_t,
-								std::shared_ptr<NodeType> > > {
-	public:
 
-		typedef		std::shared_ptr< NodeType >	NodePtrType;
+// We need to define custom hash and equality functions for the node-pointer type.
+// Indeed, we want to define hash and equality of a node as equivalent to hash and equality of
+// the state that corresponds to a node.
+template <typename NodePtrT>
+struct node_hash {
+   size_t operator() (const NodePtrT& node) const { return node->state.hash(); }
+};
 
-		virtual ~StlUnorderedMapClosedList() {}
+template <typename NodePtrT>
+struct node_equal_to {
+   size_t operator() (const NodePtrT& n1, const NodePtrT& n2) const { return n1->state == n2->state; }
+};
 
-		virtual void put( NodePtrType n ) {
-			this->insert( std::make_pair( n->hash(), n ) );
-		}
+// A simple typedef to improve legibility
+template <typename NodePtrT>
+using node_unordered_set = std::unordered_set<NodePtrT, node_hash<NodePtrT>, node_equal_to<NodePtrT>>;
 
-		virtual void remove( const NodeType& n ) {
-			auto range = this->equal_range( n.hash() );
-			assert( range.first != range.second); // This checks that n was in closed list
+// A closed list is now simply an unordered_set of node pointers, providing some shortcut operations
+// plus an update 
+template <typename NodeType>
+class StlUnorderedMapClosedList : public node_unordered_set<std::shared_ptr<NodeType>>
+{
+public:
+	using NodePtrT = std::shared_ptr<NodeType>;
 
-			for ( auto entry_it = range.first; entry_it != range.second; entry_it++ ) {
-				if ( *(entry_it->second) == n ) {
-					this->erase( entry_it ); // This is safe to do here because of the return below!
-					return;
-				}
+	virtual ~StlUnorderedMapClosedList() = default;
 
-			}
-			assert( range.second != this->end() );
-			if ( *(range.second->second) == n )
-				this->erase( range.second);
-		}
+	virtual inline void put(NodePtrT node) { this->insert(node); }
 
-		virtual bool check( const NodeType& n ) {
-			auto range = this->equal_range( n.hash() );
-			if  (range.first == range.second) return false; // Empty range
-			for ( auto entry_it = range.first; entry_it != range.second; entry_it++ ) {
-				const NodeType& other = *(entry_it->second);
-				if ( other == n ) return true;
-			}
-			if ( range.second == this->end() ) return false;
-			if ( *(range.second->second) == n ) return true;
-			return false;
-		}
+	virtual inline void remove(const NodePtrT node) { this->erase(node); }
+	
+	virtual inline bool check(const NodePtrT node) { return this->find(node) != this->end(); }
 
-        virtual NodePtrType get_duplicate( const NodeType& n ) {
-			auto range = this->equal_range( n.hash() );
-			if  (range.first == range.second) return nullptr; // Empty range
-			for ( auto entry_it = range.first; entry_it != range.second; entry_it++ ) {
-				const NodeType& other = *(entry_it->second);
-				if ( other == n ) return entry_it->second;
-			}
-			if ( range.second == this->end() ) return nullptr;
-			if ( *(range.second->second) == n ) return range.second->second;
-			return nullptr;
-		}
-
-
-		//! This method checks if there's already a node referring
-		//! to the same state in the hash table. When that is the case, and
-		//! pred evaluates to true for n and n', where n' is the other node
-		//! found to be referring to the same state, n' is replaced and
-		//! we return true to signal that n can be discarded by the caller.
-		template < typename ReplacementPredicate, typename ReplacementOp >
-		bool update( NodePtrType n, ReplacementPredicate pred, ReplacementOp op ) {
-			auto range = this->equal_range( n->hash() );
-			if  (range.first == range.second) return false; // Empty range
-			for ( auto entry_it = range.first; entry_it != range.second; entry_it++ ) {
-				NodePtrType other = entry_it->second;
-				if ( *(other) == *(n)  ) {
-					if ( pred( *n, *other) ) op( n, other);
-					return true;
-				}
-			}
-			if ( range.second == this->end() ) return false;
-			NodePtrType last_guy = range.second->second;
-			if ( *(last_guy) == *n ) {
-					if ( pred(*n, *last_guy) ) op( n, last_guy );
-					return true;
-			}
-			return false;
-		}
-
-	};
-
+	//! Returns a pointer to a node which is identical to the given node and was already in the list,
+	//! if such a node exist, or nullptr otherwise
+	virtual NodePtrT seek(NodePtrT node) {
+		auto it = this->find(node);
+		return (it == this->end()) ? nullptr : *it;
+	}
+};
 
 }
