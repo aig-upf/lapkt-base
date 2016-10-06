@@ -41,7 +41,7 @@ namespace aptk {
 		//! Add a node to the open list. Note that this requires
 		//! a rvalue, i.e. the caller is passing ownership of the
 		//! node to the OpenList
-		virtual void insert( NodePtrType n ) = 0;
+		virtual void insert( const NodePtrType& node ) = 0;
 			
 		//! Gets the next node from the open list. Note that this
 		//! returns a rvalue, so the caller gets ownership of the

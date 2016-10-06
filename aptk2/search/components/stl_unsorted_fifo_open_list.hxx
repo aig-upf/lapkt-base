@@ -49,13 +49,14 @@ namespace aptk {
 
 		virtual ~StlUnsortedFIFO() { }
 
-		virtual	void insert( NodePtrType n ) override {
+		virtual	void insert(const NodePtrType& n) override {
 			if ( _evaluator != nullptr && !_evaluator->accept( *n ) )
 				return;
 
 			this->push_back( n );
-
 		}
+		
+		bool updatable(const NodePtrType& node) { return false; }
 
 		virtual NodePtrType get_next( ) override {
 			assert( !is_empty() );

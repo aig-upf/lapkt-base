@@ -62,7 +62,7 @@ public:
 	StlSortedOpenList& operator=(const StlSortedOpenList& rhs) = delete;
 	StlSortedOpenList& operator=(StlSortedOpenList&& rhs) = default;
 
-	virtual void insert( NodePtrType node ) override {
+	virtual void insert(const NodePtrType& node) override {
 		// We deal here with the case where the state we want to insert in the open list was already
 		// inserted there with a possibly different g cost value.
 		if (update(node)) return;
