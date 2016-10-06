@@ -38,7 +38,7 @@ struct node_hash {
 
 template <typename NodePtrT>
 struct node_equal_to {
-   size_t operator() (const NodePtrT& n1, const NodePtrT& n2) const { return n1->state == n2->state; }
+   bool operator() (const NodePtrT& n1, const NodePtrT& n2) const { return n1->state == n2->state; }
 };
 
 // A simple typedef to improve legibility
