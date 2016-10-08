@@ -18,27 +18,17 @@ namespace aptk
 	class ValuesTuple {
 	public:
 
-		typedef 	std::tuple< VariableIndex, ValueIndex > Entry;
-		typedef		std::vector< Entry >										Container;
+		typedef std::tuple< VariableIndex, ValueIndex > Entry;
+		typedef std::vector< Entry >  Container;
 
 		ValuesTuple();
-		ValuesTuple( size_t sz, bool preallocate = true );
-		ValuesTuple( const ValuesTuple& other );
-		ValuesTuple( ValuesTuple&& other );
+		~ValuesTuple() = default;
+		ValuesTuple( std::size_t sz, bool preallocate = true );
+		ValuesTuple(const ValuesTuple&) = default;;
+		ValuesTuple(ValuesTuple&&) = default;
+		ValuesTuple& operator=(const ValuesTuple& other) = default;
+		ValuesTuple& operator=(ValuesTuple&& other) = default;
 
-		ValuesTuple&	operator=( ValuesTuple&& other ) {
-			if ( this == &other ) return *this;
-			elements = other.elements;
-			return *this;
-		}
-
-		const ValuesTuple&	operator=( const ValuesTuple& other ) {
-			if ( this == &other ) return *this;
-			elements = other.elements;
-			return *this;
-		}
-
-		~ValuesTuple();
 
 		void	add( VariableIndex x, ValueIndex v ) {
 			elements.push_back( std::make_tuple(x,v) );
@@ -103,48 +93,38 @@ namespace aptk
 	class ValuesTupleIterator {
 	public:
 
-		ValuesTupleIterator( const std::vector<VariableIndex>& X, const std::vector<ValueIndex>& v, size_t sz );
+		ValuesTupleIterator( const std::vector<VariableIndex>& X, const std::vector<ValueIndex>& v, std::size_t sz );
 
-		~ValuesTupleIterator();
+		~ValuesTupleIterator() = default;
 
-		void	reset() {
-			for ( unsigned k = 0; k < tuple_sz; k++ ) {
-				offsets[k] = k;
-				index[k] = offsets[k];
-			}
+		void reset() {
+			std::fill(_indexes.begin(), _indexes.begin() + tuple_sz, true);
 			count = 0;
 		}
 
-		bool	next( ValuesTuple& t ) {
-			/*
-			for ( unsigned k = 0; k < tuple_sz; k++ )
-				std::cout << index[k] << " ";
-			std::cout << std::endl;
-			*/
-			for ( unsigned k = 0; k < tuple_sz; k++ ) {
-				t.set( k, index[k], values[index[k]] );
+		bool next( ValuesTuple& t ) {
+			// Check http://stackoverflow.com/a/9430993
+			unsigned i = 0, k = 0; 
+			for (; i < vars.size(); ++i) {
+				if (_indexes[i]) {
+					// std::cout << "(" << i << ", " << values[i] << ") ";
+					t.set(k, i, values[i]);
+					++k;
+				}
 			}
-			index[tuple_sz-1]++;
-			for ( unsigned k = tuple_sz-1; k > 0; k-- ) {
-				if ( index[k] < vars.size() )
-					break;
-				index[k-1]++;
-				for ( unsigned j = k; j < tuple_sz; j++ )
-					index[j] = index[j-1]+1;//offsets[j];
-			}
-			count++;
-			return index[0] < vars.size();
+			++count;
+			return std::prev_permutation(_indexes.begin(), _indexes.end());
 		}
 
 		unsigned current_tuple_index() const { return count; }
 
 	protected:
-		const 	std::vector<VariableIndex>&			vars;
-		const   std::vector<ValueIndex>&			values;
-		size_t							tuple_sz;
-		std::vector<unsigned>					offsets;
-		std::vector<unsigned>					index;
-		unsigned						count;
+		const std::vector<VariableIndex>& vars;
+		const std::vector<ValueIndex>& values;
+		std::size_t tuple_sz;
+		unsigned count;
+		
+		std::vector<bool> _indexes;
 	};
 
 

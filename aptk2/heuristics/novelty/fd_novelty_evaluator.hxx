@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <aptk2/heuristics/interfaces/novelty_evaluator.hxx>
 #include <aptk2/heuristics/novelty/tuples.hxx>
 #include <cassert>
+#include <boost/functional/hash.hpp>
 
 namespace aptk {
 
@@ -45,26 +46,26 @@ namespace aptk {
 			return 1;
 		}
 
-		virtual unsigned	evaluate( const StateType& s ) {
+		//! A micro-optimization to deal faster with the analysis of width-1 tuples
+		unsigned evaluate_width_1_tuples() {
+			unsigned current_novelty = _varnames.size() + 1;
+			for (unsigned i = 0; i < _varnames.size(); ++i) {
+				auto res = _width_1_tuples.insert(std::make_pair(_varnames[i], _valuation[i]));
+				if (!res.second) continue; // This tuple was already accounted for
+				current_novelty = 1; // It wasn't
+			}
+			return current_novelty;
+		}
+		
+		virtual unsigned evaluate( const StateType& s ) {
 			assert( _tables.size() > 0 );
 
 			s.get_valuation( _varnames, _valuation );
 
-			unsigned current_novelty = _varnames.size() + 1;
+			unsigned current_novelty = evaluate_width_1_tuples();
 
-			for ( unsigned i = 0; i < _varnames.size(); i++  ) {
-				VariableIndex X = _varnames[i];
-				ValueIndex v = _valuation[i];
-				ValuesTuple t(1,false);
-				t.add( X, v );
-				auto result = _tables[1].insert(t);
-				if (! result.second) continue; // This tuple was already accounted for
-				current_novelty=1; // It wasn't
-			}
+			for (unsigned min_novelty = 2; min_novelty <= BaseClass::max_novelty(); ++min_novelty) {
 
-			unsigned min_novelty = 2;
-
-			while ( min_novelty <= BaseClass::max_novelty() ) {
 				ValuesTupleIterator it( _varnames, _valuation, min_novelty );
 				ValuesTuple t( min_novelty );
 				bool updated_tables = false;
@@ -72,11 +73,10 @@ namespace aptk {
 					auto result = _tables[min_novelty].insert( t );
 					updated_tables |= result.second;
 				}
-				if ( updated_tables ) {
-					if ( min_novelty < current_novelty )
-						current_novelty = min_novelty;
+				
+				if ( updated_tables && min_novelty < current_novelty) {
+					current_novelty = min_novelty;
 				}
-				min_novelty++;
 			}
 
 			if ( current_novelty < ( _varnames.size() + 1 ) )
@@ -97,6 +97,9 @@ namespace aptk {
 
 	protected:
 
+		using Width1Tuple = std::pair<unsigned, int>;
+		
+		std::unordered_set<Width1Tuple, boost::hash<Width1Tuple>> _width_1_tuples;
 		NoveltyTables			_tables;
 		std::vector< VariableIndex >	_varnames;
 		std::vector< ValueIndex >	_valuation;
