@@ -24,7 +24,7 @@ namespace aptk
 		ValuesTuple();
 		~ValuesTuple() = default;
 		ValuesTuple( std::size_t sz, bool preallocate = true );
-		ValuesTuple(const ValuesTuple&) = default;;
+		ValuesTuple(const ValuesTuple&) = default;
 		ValuesTuple(ValuesTuple&&) = default;
 		ValuesTuple& operator=(const ValuesTuple& other) = default;
 		ValuesTuple& operator=(ValuesTuple&& other) = default;
