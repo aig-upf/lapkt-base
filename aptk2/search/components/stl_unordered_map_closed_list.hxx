@@ -31,42 +31,60 @@ namespace aptk {
 // We need to define custom hash and equality functions for the node-pointer type.
 // Indeed, we want to define hash and equality of a node as equivalent to hash and equality of
 // the state that corresponds to a node.
-template <typename NodePtrT>
+template <typename NodePT>
 struct node_hash {
-   size_t operator() (const NodePtrT& node) const { return node->state.hash(); }
+   size_t operator() (const NodePT& node) const { return node->state.hash(); }
 };
 
-template <typename NodePtrT>
+template <typename NodePT>
 struct node_equal_to {
-   bool operator() (const NodePtrT& n1, const NodePtrT& n2) const { return n1->state == n2->state; }
+   bool operator() (const NodePT& n1, const NodePT& n2) const { return n1->state == n2->state; }
 };
 
 // A simple typedef to improve legibility
-template <typename NodePtrT>
-using node_unordered_set = std::unordered_set<NodePtrT, node_hash<NodePtrT>, node_equal_to<NodePtrT>>;
+template <typename NodePT>
+using node_unordered_set = std::unordered_set<NodePT, node_hash<NodePT>, node_equal_to<NodePT>>;
 
 // A closed list is now simply an unordered_set of node pointers, providing some shortcut operations
 // plus an update 
-template <typename NodeType>
-class StlUnorderedMapClosedList : public node_unordered_set<std::shared_ptr<NodeType>>
-{
+template <typename NodeT>
+class StlUnorderedMapClosedList : public node_unordered_set<std::shared_ptr<NodeT>> {
 public:
-	using NodePtrT = std::shared_ptr<NodeType>;
+	using NodePT = std::shared_ptr<NodeT>;
 
 	virtual ~StlUnorderedMapClosedList() = default;
 
-	virtual inline void put(NodePtrT node) { this->insert(node); }
+	virtual inline void put(const NodePT& node) { this->insert(node); }
 
-	virtual inline void remove(const NodePtrT node) { this->erase(node); }
+	virtual inline void remove(const NodePT& node) { this->erase(node); }
 	
-	virtual inline bool check(const NodePtrT node) { return this->find(node) != this->end(); }
+	virtual inline bool check(const NodePT& node) { return this->find(node) != this->end(); }
 
 	//! Returns a pointer to a node which is identical to the given node and was already in the list,
 	//! if such a node exist, or nullptr otherwise
-	virtual NodePtrT seek(NodePtrT node) {
+	virtual NodePT seek(NodePT& node) {
 		auto it = this->find(node);
 		return (it == this->end()) ? nullptr : *it;
 	}
+};
+
+//! A fake closed list that acts as if no node was ever in it
+template <typename NodeT>
+class NullClosedList {
+public:
+	using NodePT = std::shared_ptr<NodeT>;
+
+	~NullClosedList() = default;
+
+	inline void put(const NodePT& node) {}
+
+	inline void remove(const NodePT& node) {}
+	
+	inline bool check(const NodePT& node) { return false; }
+
+	//! Returns a pointer to a node which is identical to the given node and was already in the list,
+	//! if such a node exist, or nullptr otherwise
+	NodePT seek(NodePT& node) { return nullptr; }
 };
 
 }
