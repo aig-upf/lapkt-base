@@ -36,16 +36,12 @@ namespace aptk {
 	public :
 		typedef std::shared_ptr<NodeType>		NodePtrType;
 
-		virtual	~OpenList() { }
+		virtual ~OpenList() = default;
 
-		//! Add a node to the open list. Note that this requires
-		//! a rvalue, i.e. the caller is passing ownership of the
-		//! node to the OpenList
-		virtual void insert( const NodePtrType& node ) = 0;
-			
-		//! Gets the next node from the open list. Note that this
-		//! returns a rvalue, so the caller gets ownership of the
-		//! node
+		//! Add a node to the open list. Returns true iff the insertion actually took place
+		virtual bool insert( const NodePtrType& node ) = 0;
+
+		//! Gets the next node from the open list.
 		virtual NodePtrType get_next( ) = 0;
 
 		//! Returns true if there are no more nodes to be processed

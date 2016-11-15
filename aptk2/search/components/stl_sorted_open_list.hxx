@@ -62,10 +62,10 @@ public:
 	StlSortedOpenList& operator=(const StlSortedOpenList& rhs) = delete;
 	StlSortedOpenList& operator=(StlSortedOpenList&& rhs) = default;
 
-	virtual void insert(const NodePtrType& node) override {
+	bool insert(const NodePtrType& node) override {
 		// We deal here with the case where the state we want to insert in the open list was already
 		// inserted there with a possibly different g cost value.
-		if (update(node)) return;
+		if (update(node)) return false;
 
 		// If using delayed evaluation, set the heuristic value to that of the parent; otherwise, compute it anew.
 		if (_delayed) {
@@ -74,9 +74,10 @@ public:
 			node->evaluate_with(_heuristic);
 		}
 		
-		if ( node->dead_end() ) return;
+		if ( node->dead_end() ) return false;
 		this->push( node );
 		already_in_open_.put( node );
+		return true;
 	}
 
 	virtual NodePtrType get_next() override {
