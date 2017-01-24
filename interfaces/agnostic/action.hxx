@@ -63,11 +63,11 @@ public:
 
 
 
-	std::string	          	signature() const { return m_signature; }
-	void		           	set_signature(std::string sig) { m_signature = sig; }
+	const std::string&	          	signature() const { return m_signature; }
+	void		           	set_signature(const std::string& sig) { m_signature = sig; }
 
-	std::string	           	name() const { return m_name; }
-	void		           	set_name(std::string nam) { m_name = nam; }
+	const std::string&	           	name() const { return m_name; }
+	void		           	set_name(const std::string& nam) { m_name = nam; }
 
 	unsigned	           	index() const { return m_index; }
 	void		           	set_index( unsigned idx ) { m_index = idx; }

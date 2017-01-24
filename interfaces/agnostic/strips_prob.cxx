@@ -93,7 +93,7 @@ namespace aptk
 		
 	}
 	
-	unsigned STRIPS_Problem::add_action( STRIPS_Problem& p, std::string signature,
+	unsigned STRIPS_Problem::add_action( STRIPS_Problem& p, const std::string& signature,
 					     const Fluent_Vec& pre, const Fluent_Vec& add, const Fluent_Vec& del,
 					     const Conditional_Effect_Vec& ceffs, float cost )
 	{
@@ -112,7 +112,7 @@ namespace aptk
 		return p.actions().size()-1;
 	}
 
-	unsigned STRIPS_Problem::add_fluent( STRIPS_Problem& p, std::string signature )
+	unsigned STRIPS_Problem::add_fluent( STRIPS_Problem& p, const std::string& signature )
 	{
 		Fluent* new_fluent = new Fluent( p );
 		new_fluent->set_index( p.fluents().size() );
