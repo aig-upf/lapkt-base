@@ -59,6 +59,7 @@ class SwitchNode : public BaseNode {
 	
 public:
 	SwitchNode( std::vector<int>& actions, std::set<int> &vars_seen, const STRIPS_Problem& prob );
+	~SwitchNode();
 	virtual void generate_applicable_items( const State& s, std::vector<int>& actions );
 	virtual void dump( std::string indent, const STRIPS_Problem& prob ) const;
 	virtual int count() const;

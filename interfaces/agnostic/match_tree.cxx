@@ -182,6 +182,11 @@ SwitchNode::SwitchNode( std::vector<int>& actions, std::set<int> &vars_seen, con
     vars_seen.erase(switch_var);
 }
 
+SwitchNode::~SwitchNode() {
+	delete default_child;
+	for (BaseNode* child:children) delete child;
+}
+
 void SwitchNode::dump( std::string indent, const STRIPS_Problem& prob ) const {
     std::cout << indent << "switch on " << prob.fluents()[switch_var]->signature() << std::endl;
     std::cout << indent << "immediately:" << std::endl;
