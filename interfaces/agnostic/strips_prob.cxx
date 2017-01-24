@@ -39,6 +39,7 @@ namespace aptk
 	STRIPS_Problem::~STRIPS_Problem()
 	{
 		for (Action* action:m_actions) delete action;
+		for (Fluent* fluent:m_fluents) delete fluent;
 	}
 
 	void	STRIPS_Problem::make_action_tables( bool generate_match_tree )
