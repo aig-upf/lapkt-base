@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tuple>
+#include <vector>
 #include <aptk2/tools/jenkins_12bit.hxx>
 
 namespace aptk
@@ -50,16 +51,16 @@ namespace aptk
 		inline bool operator<=( const ValuesTuple& t ) const { return !(operator>(t)); }
 		inline bool operator>=( const ValuesTuple& t ) const { return !(operator<(t)); }
 
-		Container::iterator
+		typename Container::iterator
 		begin()	{ return elements.begin(); }
 
-		Container::iterator
+		typename Container::iterator
 		end() { return elements.end(); }
 
-		Container::const_iterator
+		typename Container::const_iterator
 		begin() const { return elements.begin(); }
 
-		Container::const_iterator
+		typename Container::const_iterator
 		end() const { return elements.end(); }
 
 		friend std::ostream& 	operator<<( std::ostream& stream, const ValuesTuple& t );
