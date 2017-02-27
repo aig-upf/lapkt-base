@@ -7,7 +7,7 @@
 
 #include <lapkt/tools/logging.hxx>
 
-namespace aptk {
+namespace lapkt { namespace tools {
 	
 std::unique_ptr<Logger> Logger::_instance = nullptr;
 
@@ -72,4 +72,4 @@ Logger::log(const std::string& level, const std::string& filename) {
 	return stream;
 }
 
-} // namespaces
+} } // namespaces

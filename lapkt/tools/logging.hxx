@@ -7,7 +7,7 @@
 #include <boost/timer/timer.hpp>
 
 
-namespace aptk {
+namespace lapkt { namespace tools {
 
 //! The Logger class uses a singleton and keeps track of time in order to timestamp the log messages.
 class Logger {
@@ -41,18 +41,18 @@ public:
 	std::ostream& log(const std::string& level, const std::string& filename);
 };
 
-} // namespaces
+} } // namespaces
 
 
 // ************************
 // THE ACTUAL LOGGING MACROS, WITH THREE DIFFERENT LOGGING LEVELS
 // ************************
 //! Info level
-#define LPT_INFO(file, message) aptk::Logger::instance().log("INFO", file) << message << std::endl;
+#define LPT_INFO(file, message) lapkt::tools::Logger::instance().log("INFO", file) << message << std::endl;
 
 //! Debugging level
 #ifdef DEBUG
-#define LPT_DEBUG(file, message) aptk::Logger::instance().log("DEBUG", file) << message << std::endl;
+#define LPT_DEBUG(file, message) lapkt::tools::Logger::instance().log("DEBUG", file) << message << std::endl;
 #else
 #define LPT_DEBUG(file, message)
 #endif
@@ -60,7 +60,7 @@ public:
 
 //! Extreme Debugging level
 #ifdef EDEBUG
-#define LPT_EDEBUG(file, message) aptk::Logger::instance().log("EDEBUG", file) << message << std::endl;
+#define LPT_EDEBUG(file, message) lapkt::tools::Logger::instance().log("EDEBUG", file) << message << std::endl;
 #else
 #define LPT_EDEBUG(file, message)
 #endif
