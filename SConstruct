@@ -60,14 +60,10 @@ if env['edebug']:
 
 
 # Base include directories
-include_paths = ['..']
+include_paths = ['src']
 isystem_paths = [HOME + '/local/include']
 
-# ATM we only include in the library a minimum amount of source files.
-source_directories = ['./search', './heuristics/interfaces', './heuristics/novelty', './tools']
-source_files = [locate_source_files(d, '*.cxx') for d in source_directories]
-sources = list(itertools.chain.from_iterable(source_files))  # Merge the nested sublists
-#print(sources)
+sources = locate_source_files('src', '*.cxx')
 
 env.Append( CPPPATH = [ os.path.abspath(p) for p in include_paths ] )
 env.Append( CCFLAGS = [ '-isystem' + os.path.abspath(p) for p in isystem_paths ] )

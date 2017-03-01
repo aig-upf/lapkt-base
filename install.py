@@ -32,8 +32,13 @@ def list_header_files(src_dir):
 def remove_prefix(s, prefix):
     return s[len(prefix):] if s.startswith(prefix) else s
 
-def report_copied_file(src, dst):
+def common_subpath_prefix(src, dst):
 	prefix = os.path.commonprefix((src, dst))
+	last_slash = prefix.rfind("/")
+	return prefix[:last_slash+1]
+	
+def report_copied_file(src, dst):
+	prefix = common_subpath_prefix(src, dst)
 	print("{}  -->  {}".format(remove_prefix(src, prefix), remove_prefix(dst, prefix)))
 	
 def copy_headers(src_dir, dest_dir):
@@ -64,7 +69,7 @@ def main(args):
 	
 	current_dir = os.path.dirname(os.path.abspath(__file__))
 	
-	src_dir = os.path.join(current_dir)
+	src_dir = os.path.join(current_dir, 'src', 'lapkt')
 	dest_dir = os.path.join(args.dir, 'include/lapkt')
 	copy_headers(src_dir, dest_dir)
 	
