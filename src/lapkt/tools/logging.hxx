@@ -41,12 +41,12 @@ public:
 	std::ostream& log(const std::string& level, const std::string& filename);
 
 	//! Set the global singleton problem instance
-	static void setInstance(std::unique_ptr<Logger>&& problem) {
+	static void set_instance(std::unique_ptr<Logger>&& problem) {
 		assert(!_instance);
 		_instance = std::move(problem);
 	}
 
-	static std::unique_ptr<Logger>&& claimOwnership() {
+	static std::unique_ptr<Logger>&& claim_ownership() {
 		return std::move(_instance);
 	}
 
