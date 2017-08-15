@@ -39,6 +39,18 @@ public:
 
 	//! Returns a stream to debug to the given filename
 	std::ostream& log(const std::string& level, const std::string& filename);
+
+	//! Set the global singleton problem instance
+	static void setInstance(std::unique_ptr<Logger>&& problem) {
+		assert(!_instance);
+		_instance = std::move(problem);
+	}
+
+	static std::unique_ptr<Logger>&& claimOwnership() {
+		return std::move(_instance);
+	}
+
+
 };
 
 } } // namespaces
