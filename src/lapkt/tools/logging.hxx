@@ -5,7 +5,7 @@
 #include <fstream>
 #include <map>
 #include <boost/timer/timer.hpp>
-
+#include <cassert>
 
 namespace lapkt { namespace tools {
 
