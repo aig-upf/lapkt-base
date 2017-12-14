@@ -33,12 +33,12 @@ namespace aptk {
 // the state that corresponds to a node.
 template <typename NodePT>
 struct node_hash {
-   size_t operator() (const NodePT& node) const { return node->state.hash(); }
+	size_t operator() (const NodePT& node) const { return node->state.hash(); }
 };
 
 template <typename NodePT>
 struct node_equal_to {
-   bool operator() (const NodePT& n1, const NodePT& n2) const { return n1->state == n2->state; }
+	bool operator() (const NodePT& n1, const NodePT& n2) const { return n1->state == n2->state; }
 };
 
 // A simple typedef to improve legibility
@@ -57,8 +57,8 @@ public:
 	virtual inline void put(const NodePT& node) { this->insert(node); }
 
 	virtual inline void remove(const NodePT& node) { this->erase(node); }
-	
-	virtual inline bool check(const NodePT& node) { return this->find(node) != this->end(); }
+
+	virtual inline bool check(const NodePT& node) const { return this->find(node) != this->end(); }
 
 	//! Returns a pointer to a node which is identical to the given node and was already in the list,
 	//! if such a node exist, or nullptr otherwise
@@ -79,8 +79,8 @@ public:
 	inline void put(const NodePT& node) {}
 
 	inline void remove(const NodePT& node) {}
-	
-	inline bool check(const NodePT& node) { return false; }
+
+	inline bool check(const NodePT& node) const { return false; }
 
 	//! Returns a pointer to a node which is identical to the given node and was already in the list,
 	//! if such a node exist, or nullptr otherwise
