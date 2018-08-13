@@ -211,6 +211,13 @@ public:
 		return _index.find(node) != _index.end();
 	}
 
+    //! Returns a pointer to a node which is identical to the given node and was already in the list,
+    //! if such a node exist, or nullptr otherwise
+    virtual NodePT seek(NodePT& node) {
+        auto it = this->_index.find(node);
+        return (it == this->_index.end()) ? nullptr : *it;
+    }
+
 	//! For the sake of template compatibility
 	bool updatable(const NodePT& node) { return contains(node); }
 	
