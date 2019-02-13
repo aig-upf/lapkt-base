@@ -37,10 +37,10 @@ template <typename NodePT>
 struct node_comparer { bool operator()(const NodePT& n1, const NodePT& n2) const { return *n1 > *n2; } };
 
 template <typename NodePT>
-struct node_hash { size_t operator() (const NodePT& node) const { return node->state.hash(); } };
+struct node_hash { size_t operator() (const NodePT& node) const { return node->hash(); } };
 
 template <typename NodePT>
-struct node_equal_to { bool operator() (const NodePT& n1, const NodePT& n2) const { return n1->state == n2->state; } };
+struct node_equal_to { bool operator() (const NodePT& n1, const NodePT& n2) const { return *n1 == *n2; } };
 
 
 //! An classical open list augmented with a hash table to allow for fast updates
@@ -56,9 +56,9 @@ public:
 	explicit UpdatableOpenList()
 		: _index()
 	{}
-	
+
 	virtual ~UpdatableOpenList() = default;
-	
+
 	// Disallow copy, but allow move
 	UpdatableOpenList(const UpdatableOpenList&) = default;
 	UpdatableOpenList(UpdatableOpenList&&) = default;
@@ -71,7 +71,7 @@ public:
 		_index.insert( node );
 		return true;
 	}
-	
+
 	bool contains(const NodePT& node) const {
 		return _index.find(node) != _index.end();
 	}
@@ -82,15 +82,15 @@ public:
 	bool updatable(const NodePT& node) {
 		auto it = _index.find(node);
 		if (it == _index.end()) return false; // No node with the same state is in the open list
-		
+
 		// Else the node was already in the open list and we might want to update it
-		
+
 		// @TODO: Very important: updating g is correct provided that
 		// the order of the nodes in the open list is not changed by
 		// updating it. This is an open problem with the design,
 		// and a more definitive solution needs to be found (soon).
 		(*it)->update_in_open_list(node);
-		
+
 		return true;
 	}
 
@@ -102,7 +102,7 @@ public:
 		_index.erase(node);
 		return node;
 	}
-	
+
 protected:
 	//! An index of the nodes with are in the open list at any moment, for faster access
 	using node_unordered_set = std::unordered_set<NodePT, node_hash<NodePT>, node_equal_to<NodePT>>;
@@ -120,7 +120,7 @@ public:
 	//! Constructor
 	explicit SimpleOpenList() = default;
 	~SimpleOpenList() = default;
-	
+
 	// Disallow copy, but allow move
 	SimpleOpenList(const SimpleOpenList&) = default;
 	SimpleOpenList(SimpleOpenList&&) = default;
@@ -175,7 +175,7 @@ template <typename NodeT>
 class QueueAcceptorI {
 public:
 	virtual ~QueueAcceptorI() = default;
-	
+
 	//! Accept any state
 	virtual bool accept(NodeT& n) = 0;
 };
@@ -191,9 +191,9 @@ public:
 	explicit SearchableQueue(QueueAcceptorT* acceptor = nullptr)
 		: _index(), _acceptor(acceptor)
 	{}
-	
+
 	virtual ~SearchableQueue() = default;
-	
+
 	// Disallow copy, but allow move
 	SearchableQueue(const SearchableQueue&) = default;
 	SearchableQueue(SearchableQueue&&) = default;
@@ -206,7 +206,7 @@ public:
 		_index.insert( node );
 		return true;
 	}
-	
+
 	bool contains(const NodePT& node) const {
 		return _index.find(node) != _index.end();
 	}
@@ -220,7 +220,7 @@ public:
 
 	//! For the sake of template compatibility
 	bool updatable(const NodePT& node) { return contains(node); }
-	
+
 	//! Extract the "next" node from the data structure and return it
 	NodePT next() {
 		assert(!this->empty());
@@ -234,7 +234,7 @@ protected:
 	//! An index of the nodes with are in the open list at any moment, for faster access
 	using node_unordered_set = std::unordered_set<NodePT, node_hash<NodePT>, node_equal_to<NodePT>>;
 	node_unordered_set _index;
-	
+
 	//! An (optional) acceptor object
 	std::unique_ptr<QueueAcceptorT> _acceptor;
 };

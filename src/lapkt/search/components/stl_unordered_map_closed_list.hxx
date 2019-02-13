@@ -33,12 +33,12 @@ namespace aptk {
 // the state that corresponds to a node.
 template <typename NodePT>
 struct node_hash {
-	size_t operator() (const NodePT& node) const { return node->state.hash(); }
+	size_t operator() (const NodePT& node) const { return node->hash(); }
 };
 
 template <typename NodePT>
 struct node_equal_to {
-	bool operator() (const NodePT& n1, const NodePT& n2) const { return n1->state == n2->state; }
+	bool operator() (const NodePT& n1, const NodePT& n2) const { return *n1 == *n2; }
 };
 
 // A simple typedef to improve legibility
@@ -46,7 +46,7 @@ template <typename NodePT>
 using node_unordered_set = std::unordered_set<NodePT, node_hash<NodePT>, node_equal_to<NodePT>>;
 
 // A closed list is now simply an unordered_set of node pointers, providing some shortcut operations
-// plus an update 
+// plus an update
 template <typename NodeT>
 class StlUnorderedMapClosedList : public node_unordered_set<std::shared_ptr<NodeT>> {
 public:
