@@ -80,7 +80,7 @@ public:
 	//! of all the $b^d$ nodes of the last (deepest) layer (where b is the branching factor).
 	bool search(const StateT& s, PlanT& solution) override {
 		NodePT n = std::make_shared<NodeT>(s, this->_generated++);
-        _live_node_count = 1;
+        this->init_node_count();
 		this->notify(NodeCreationEvent(*n));
 
 		if (this->check_goal(n, solution)) return true;

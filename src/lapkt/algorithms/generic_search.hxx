@@ -76,7 +76,7 @@ public:
 
 	virtual bool search(const StateT& s, PlanT& solution) {
 		NodePT n = std::make_shared<NodeT>(s, _generated++);
-        _live_node_count = 1;
+        this->init_node_count();
 		this->notify(NodeCreationEvent(*n));
 		_open.insert(n);
 
@@ -133,7 +133,9 @@ public:
             throw std::logic_error("Max Nodes Exceeded");
     }
 
-
+    void init_node_count() {
+        _live_node_count = 1;
+    }
 
 protected:
 
