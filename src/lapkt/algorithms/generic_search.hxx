@@ -125,7 +125,7 @@ public:
 
     unsigned    get_max_nodes() const { return _max_nodes; }
 
-    bool        max_nodes_exceeded() const { return _live_node_count < _max_nodes; }
+    bool        max_nodes_exceeded() const { return _live_node_count > _max_nodes; }
 
     virtual void check_max_nodes_limit() {
         _live_node_count++;
