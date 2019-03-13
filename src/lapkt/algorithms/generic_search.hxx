@@ -29,6 +29,8 @@ Concepts borrowed from Ethan Burn's heuristic search framework.
 
 #include <algorithm>
 #include <memory>
+#include <limits>
+#include <stdexcept>
 
 #include <lapkt/tools/events.hxx>
 
@@ -46,7 +48,7 @@ public:
 	using PlanT =  std::vector<ActionIdT>;
 	using NodePT = std::shared_ptr<NodeT>;
 	using StateT = _StateT;
-	
+
 	//! Relevant events
 	using NodeOpenEvent = events::NodeOpenEvent<NodeT>;
 	using GoalFoundEvent = events::GoalFoundEvent<NodeT>;
@@ -59,10 +61,13 @@ public:
 	//! (3) the closed list object to be used in the search
 	GenericSearch(const StateModel& model, OpenList&& open, ClosedList&& closed) :
 		_model(model), _open(std::move(open)), _closed(std::move(closed)), _generated(0)
-	{}
+	{
+        _live_node_count = 0;
+        _max_nodes = std::numeric_limits<unsigned>::max();
+    }
 
 	virtual ~GenericSearch() {}
-	
+
 	// Disallow copy, but allow move
 	GenericSearch(const GenericSearch& other) = delete;
 	GenericSearch(GenericSearch&& other) = default;
@@ -71,30 +76,33 @@ public:
 
 	virtual bool search(const StateT& s, PlanT& solution) {
 		NodePT n = std::make_shared<NodeT>(s, _generated++);
+        _live_node_count = 1;
 		this->notify(NodeCreationEvent(*n));
 		_open.insert(n);
-		
+
 		while ( !_open.empty() ) {
 			NodePT current = _open.next( );
-			
+
 			this->notify(NodeOpenEvent(*current));
-			
+
 			if (check_goal(current, solution)) return true;
 
 			// close the node before the actual expansion so that children which are identical
 			// to 'current' get properly discarded
 			_closed.put(current);
-			
+
 			this->notify(NodeExpansionEvent(*current));
-			
+
 			for ( const auto& a : _model.applicable_actions( current->state ) ) {
 				StateT s_a = _model.next( current->state, a );
 				NodePT successor = std::make_shared<NodeT>(std::move(s_a), a, current, _generated++);
-				
+
 				if (_closed.check(successor)) continue; // The node has already been closed
 				if (_open.updatable(successor)) continue; // The node is currently on the open list, we update some of its attributes but there's no need to reinsert it.
-				
+
 				this->notify(NodeCreationEvent(*successor));
+                this->check_max_nodes_limit();
+
 				_open.insert( successor );
 			}
 		}
@@ -109,12 +117,26 @@ public:
 		}
 		std::reverse( solution.begin(), solution.end() );
 	}
-	
+
 	//! Convenience method
 	bool solve_model(PlanT& solution) { return search( _model.init(), solution ); }
-	
+    //! limits
+    void        set_max_nodes(unsigned max_nodes) { _max_nodes = max_nodes; }
+
+    unsigned    get_max_nodes() const { return _max_nodes; }
+
+    bool        max_nodes_exceeded() const { return _live_node_count < _max_nodes; }
+
+    virtual void check_max_nodes_limit() {
+        _live_node_count++;
+        if (this->max_nodes_exceeded())
+            throw std::logic_error("Max Nodes Exceeded");
+    }
+
+
+
 protected:
-	
+
 	virtual bool check_goal(const NodePT& node, PlanT& solution) {
 		if ( _model.goal(node->state)) { // Solution found, we're done
 			this->notify(GoalFoundEvent(*node));
@@ -123,18 +145,22 @@ protected:
 		}
 		return false;
 	}
-	
+
 	//! The search model
 	const StateModel& _model;
-	
+
 	//! The open list
 	OpenList _open;
-	
+
 	//! The closed list
 	ClosedList _closed;
-	
+
 	//! The number of generated nodes so far
 	unsigned long _generated;
+
+    //! Number of live nodes
+    unsigned _live_node_count;
+    unsigned _max_nodes;
 
 	//* Some methods mainly for debugging purposes
 	bool check_open_list_integrity() const {
@@ -145,7 +171,7 @@ protected:
 		}
 		return true;
 	}
-	
+
 	bool check_closed_list_integrity() const {
 		ClosedList copy(_closed);
 		for (auto node:copy) {
@@ -153,7 +179,7 @@ protected:
 		}
 		return true;
 	}
-	
+
 	bool check_node_correctness(const NodePT& node) const {
 		if (node->has_parent()) {
 			assert(_model.is_applicable(node->parent->state, node->action));
