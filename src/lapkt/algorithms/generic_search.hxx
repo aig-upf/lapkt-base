@@ -137,6 +137,11 @@ public:
         _live_node_count = 1;
     }
 
+    unsigned get_node_count() const { return _live_node_count; }
+
+    const OpenList& get_open() const { return _open; }
+    const ClosedList& get_closed() const { return _closed;}
+
 protected:
 
 	virtual bool check_goal(const NodePT& node, PlanT& solution) {
