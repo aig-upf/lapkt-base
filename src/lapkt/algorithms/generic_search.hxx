@@ -75,6 +75,7 @@ public:
 	GenericSearch& operator=(GenericSearch&& rhs) = default;
 
 	virtual bool search(const StateT& s, PlanT& solution) {
+        reset_goal();
 		NodePT n = std::make_shared<NodeT>(s, _generated++);
         this->init_node_count();
 		this->notify(NodeCreationEvent(*n));
@@ -142,11 +143,17 @@ public:
     const OpenList& get_open() const { return _open; }
     const ClosedList& get_closed() const { return _closed;}
 
+
+    NodePT get_goal() { return _goal; }
+
+    void reset_goal() { _goal = nullptr; }
+
 protected:
 
 	virtual bool check_goal(const NodePT& node, PlanT& solution) {
 		if ( _model.goal(node->state)) { // Solution found, we're done
 			this->notify(GoalFoundEvent(*node));
+            _goal = node;
 			retrieve_solution(node, solution);
 			return true;
 		}
@@ -168,6 +175,9 @@ protected:
     //! Number of live nodes
     unsigned _live_node_count;
     unsigned _max_nodes;
+
+    //! Goal node
+    NodePT  _goal;
 
 	//* Some methods mainly for debugging purposes
 	bool check_open_list_integrity() const {
@@ -193,6 +203,7 @@ protected:
 		}
 		return true;
 	}
+
 };
 
 }

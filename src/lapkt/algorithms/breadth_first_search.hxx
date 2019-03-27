@@ -79,6 +79,7 @@ public:
 	//! On a problem that has a solution at depth 'd', this avoids the worst-case expansion
 	//! of all the $b^d$ nodes of the last (deepest) layer (where b is the branching factor).
 	bool search(const StateT& s, PlanT& solution) override {
+        this->reset_goal();
 		NodePT n = std::make_shared<NodeT>(s, this->_generated++);
         this->init_node_count();
 		this->notify(NodeCreationEvent(*n));
