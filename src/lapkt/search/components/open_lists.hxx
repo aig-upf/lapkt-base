@@ -176,6 +176,79 @@ protected:
     HeuristicPT       _heuristic;
 };
 
+template <  typename NodeT,
+        typename HeuristicPT,
+        typename NodePT = std::shared_ptr<NodeT>,
+        typename ComparerT = node_comparer<NodePT>
+>
+class DelayedEvaluationOpenList : public std::priority_queue<NodePT, std::vector<NodePT>, ComparerT>
+{
+public:
+    //! Constructor
+    explicit DelayedEvaluationOpenList(HeuristicPT h)
+            : _heuristic(h), _index()
+    {}
+
+    virtual ~DelayedEvaluationOpenList() = default;
+
+    // Disallow copy, but allow move
+    DelayedEvaluationOpenList(const DelayedEvaluationOpenList&) = default;
+    DelayedEvaluationOpenList(DelayedEvaluationOpenList&&) = default;
+    DelayedEvaluationOpenList& operator=(const DelayedEvaluationOpenList&) = default;
+    DelayedEvaluationOpenList& operator=(DelayedEvaluationOpenList&&) = default;
+
+    bool insert(const NodePT& node) {
+        if (node->parent == nullptr)
+            node->evaluate_with(*_heuristic);
+        else
+            node->inherit_heuristic_estimate();
+        if ( node->dead_end() ) return false;
+        this->push( node );
+        _index.insert( node );
+        return true;
+    }
+
+    bool contains(const NodePT& node) const {
+        return _index.find(node) != _index.end();
+    }
+
+    //! Check if the open list already contains a node 'previous' referring to the same state.
+    //! If that is the case, there'll be no need to reinsert the node, and we signal so returning true.
+    //! If, in addition, 'previous' had a higher g-value, we do an in-place modification of it.
+    bool updatable(const NodePT& node) {
+        auto it = _index.find(node);
+        if (it == _index.end()) return false; // No node with the same state is in the open list
+
+        // Else the node was already in the open list and we might want to update it
+
+        // @TODO: Very important: updating g is correct provided that
+        // the order of the nodes in the open list is not changed by
+        // updating it. This is an open problem with the design,
+        // and a more definitive solution needs to be found (soon).
+        (*it)->update_in_open_list(node);
+
+        return true;
+    }
+
+    //! Extract the "next" node from the data structure and return it
+    NodePT next() {
+        assert(!this->empty());
+        NodePT node = this->top();
+        this->pop();
+        _index.erase(node);
+        if (node->parent != nullptr)
+            node->evaluate_with(*_heuristic);
+        return node;
+    }
+
+protected:
+    //! An index of the nodes with are in the open list at any moment, for faster access
+    using node_unordered_set = std::unordered_set<NodePT, node_hash<NodePT>, node_equal_to<NodePT>>;
+    node_unordered_set _index;
+    HeuristicPT       _heuristic;
+};
+
+
 //! A simple wrapper around a priority_queue, for compatibility
 template <typename NodeT,
           typename NodePT = std::shared_ptr<NodeT>,
