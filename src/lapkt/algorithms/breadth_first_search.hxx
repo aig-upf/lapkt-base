@@ -48,7 +48,8 @@ public:
 	using NodeOpenEvent = typename BaseClass::NodeOpenEvent;
 	using GoalFoundEvent = typename BaseClass::GoalFoundEvent;
 	using NodeExpansionEvent = typename BaseClass::NodeExpansionEvent;
-	using NodeCreationEvent = typename BaseClass::NodeCreationEvent;
+    using NodeGenerationEvent = typename BaseClass::NodeGenerationEvent;
+    using NodeCreationEvent = typename BaseClass::NodeCreationEvent;
 
 	//! The constructor requires the user of the algorithm to inject both
 	//! (1) the state model to be used in the search
@@ -97,7 +98,9 @@ public:
 			for ( const auto& a : this->_model.applicable_actions( current->state ) ) {
 				StateT s_a = this->_model.next( current->state, a );
 				NodePT successor = std::make_shared<NodeT>(std::move(s_a), a, current, this->_generated++);
-				
+
+                this->notify(NodeGenerationEvent(*successor));
+
 				if (this->_closed.check(successor)) continue; // The node has already been closed
 				if (this->_open.contains(successor)) continue; // The node is already in the open list (and surely won't have a worse g-value, this being BrFS)
 

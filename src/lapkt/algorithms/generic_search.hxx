@@ -51,6 +51,7 @@ public:
 	using NodeOpenEvent = events::NodeOpenEvent<NodeT>;
 	using GoalFoundEvent = events::GoalFoundEvent<NodeT>;
 	using NodeExpansionEvent = events::NodeExpansionEvent<NodeT>;
+    using NodeGenerationEvent = events::NodeGenerationEvent<NodeT>;
 	using NodeCreationEvent = events::NodeCreationEvent<NodeT>;
 
 	//! The only allowed constructor requires the user of the algorithm to inject both

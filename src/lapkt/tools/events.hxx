@@ -111,6 +111,13 @@ public:
 };
 
 template <typename NodeT>
+class NodeGenerationEvent : public NodeEvent<NodeT> {
+public:
+    using BaseClass = NodeEvent<NodeT>;
+    NodeGenerationEvent(NodeT& node_) : BaseClass(node_) {}
+};
+
+template <typename NodeT>
 class NodeCreationEvent : public NodeEvent<NodeT> {
 public:
 	using BaseClass = NodeEvent<NodeT>;
